@@ -25,6 +25,13 @@ import {
 } from "@/components/ui/field"
 import { GoogleButton } from "@/components/google-button"
 
+
+import { auth, googleProvider } from "@/lib/firebase";
+import { signInWithPopup, signOut } from "firebase/auth";
+import axios from "axios"
+import { useDaumPostcodePopup } from 'react-daum-postcode';
+
+
 type FormState = {
   email: string
   password: string
@@ -73,29 +80,116 @@ export default function SignupPage() {
     return next
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const next = validate()
-    setErrors(next)
-    if (Object.keys(next).length > 0) return
 
-    signup({
-      email: form.email,
-      nickname: form.nickname,
-      address: form.address,
-      addressDetail: form.addressDetail,
-    })
-    toast.success("회원가입이 완료되었습니다.", {
-      description: "가입 축하 포인트 100,000P가 지급되었습니다.",
-    })
-    router.push("/")
+    //이메일 입력 여부
+    if(form.email.trim().length === 0) {
+      toast.error("이메일을 입력해 주세요.")
+      return
+    }
+
+
+    //비밀번호 특수 문자 포함 6글자 이상
+    if(!/^(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/.test(form.password)) {
+      toast.error("비밀번호는 특수 문자 포함 6글자 이상이어야 합니다.")
+      return
+    }
+    
+    //비밀번호 일치 여부
+    if(form.password !== form.passwordConfirm) {
+      toast.error("비밀번호가 일치하지 않습니다.")
+      return
+    }
+
+
+    //닉네임 2자 이상
+    if(form.nickname.trim().length < 2) {
+      toast.error("닉네임은 2자 이상이어야 합니다.")
+      return
+    }
+
+    //주소 입력 여부
+    if(form.address.trim().length === 0) {
+      toast.error("주소를 입력해 주세요.")
+      return
+    }
+
+
+    
+    console.log(form)
+
+    var response = await axios.post(
+      "http://localhost:5000/api/user/create", 
+      {
+        id:form.email,
+        pw:form.password,
+        nick:form.nickname,
+        address1:form.address,
+        address2:form.addressDetail
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+
+   
+
+    if(response.data.success){
+      //회원가입 완료
+      toast.success("회원가입이 완료되었습니다.")
+      router.push("/")
+      return
+    }
+
+
+    alert(response.status)
+
+
+    if(response.status === 400){
+      toast.error(response.data.message)
+      return
+    }
+    
+
+
+
+
+
+
+
+    
   }
 
-  function handleGoogle() {
-    loginWithGoogle()
-    toast.success("Google 계정으로 가입되었습니다.")
-    router.push("/")
+ 
+
+  const handleGoogle = async () => {
+    // 팝업창으로 구글 로그인 진행
+    const result = await signInWithPopup(auth, googleProvider);
+      
+    // 로그인된 유저 정보에서 이메일 추출
+    const email = result.user.email;
+
+    toast.success("Google 계정(" + email + ")으로 가입을 시작합니다.")
+
+    setForm({
+      ...form,
+      email: email || "",
+    });
+    //router.push("/")
   }
+
+
+
+
+  const open = useDaumPostcodePopup("https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js");
+
+  const handleComplete = (data: any) => {
+    // 가공 없이 카카오가 주는 기본 주소(data.address)만 부모에게 전달
+    update("address", data.address);
+  };
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-col justify-center px-4 py-12">
@@ -123,6 +217,7 @@ export default function SignupPage() {
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   aria-invalid={!!errors.email}
+                  readOnly={true}
                 />
                 <FieldError>{errors.email}</FieldError>
               </Field>
@@ -173,6 +268,8 @@ export default function SignupPage() {
               <Field data-invalid={!!errors.address}>
                 <FieldLabel htmlFor="address">주소</FieldLabel>
                 <Input
+                  onClick={() => open({onComplete: handleComplete})}
+                  readOnly={true}
                   id="address"
                   placeholder="예) 대구광역시 수성구 달구벌대로"
                   value={form.address}

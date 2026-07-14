@@ -13,6 +13,8 @@ export default function HomePage() {
   const { products } = useStore()
   const [query, setQuery] = useState("")
 
+  
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (!q) return products
