@@ -30,6 +30,7 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import axios from "axios"
 import { useDaumPostcodePopup } from 'react-daum-postcode';
+import UserApi from "@/api/UserApi"
 
 
 type FormState = {
@@ -117,23 +118,18 @@ export default function SignupPage() {
 
 
     try{
-      var response = await axios.post(
-        "http://localhost:5000/api/user/create", 
-        {
-          id:form.email,
-          pw:form.password,
-          nick:form.nickname,
-          address1:form.address,
-          address2:form.addressDetail
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-  
-      if(response.data.success){
+      
+      var data = await UserApi.signup({
+        email: form.email,
+        password: form.password,
+        nickname: form.nickname,
+        address: form.address,
+        addressDetail: form.addressDetail
+      });
+
+
+
+      if(data.success){
         //회원가입 완료
         toast.success("회원가입이 완료되었습니다.")
         router.push("/")
@@ -153,7 +149,10 @@ export default function SignupPage() {
         }
       }
 
-    }    
+    }
+    
+    
+
   }
 
 
