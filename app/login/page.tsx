@@ -24,6 +24,10 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { GoogleButton } from "@/components/google-button"
+import { auth, googleProvider } from "@/lib/firebase"
+import { signInWithPopup } from "firebase/auth"
+import UserApi from "@/api/UserApi"
+import { AxiosError } from "axios"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,9 +38,9 @@ export default function LoginPage() {
     {},
   )
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const nextErrors: { email?: string; password?: string } = {}
+    var nextErrors: { email?: string; password?: string } = {}
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       nextErrors.email = "올바른 이메일 형식을 입력해 주세요."
     }
@@ -46,21 +50,52 @@ export default function LoginPage() {
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
-    const ok = login(email)
-    if (ok) {
-      toast.success("로그인되었습니다.")
-      router.push("/")
-    } else {
-      toast.error("등록되지 않은 계정입니다.", {
-        description: "hana@example.com 으로 로그인해 보세요.",
-      })
+    
+    //로그인 요청
+    try{
+      var data = await UserApi.login({
+        id: email,
+        password: password
+      });
+
+      if(data.success){
+        toast.success(`${email} 님 안녕하세요!`)
+        router.push("/")
+        return
+      }else{
+        toast.error(data.message)
+      }
+    }catch(error){
+      if(error instanceof AxiosError){
+
+        //toast
+        toast.error(error.response?.data.message)
+
+        var errorCode = error.response?.data?.errorCode || '';
+
+        if(errorCode == 'id'){
+          setErrors({
+            email: error.response?.data?.message,
+          })
+        }else if(errorCode == 'pw'){
+          //ui
+          setErrors({
+            password: error.response?.data?.message,
+          })
+        }
+
+        
+      }
     }
   }
 
-  function handleGoogle() {
-    loginWithGoogle()
-    toast.success("Google 계정으로 로그인되었습니다.")
-    router.push("/")
+  const handleGoogle = async () => {
+    // 팝업창으로 구글 로그인 진행
+    const result = await signInWithPopup(auth, googleProvider);      
+    // 로그인된 유저 정보에서 이메일 추출
+    const email = result.user.email;
+
+    setEmail(email || "")
   }
 
   return (
@@ -80,9 +115,10 @@ export default function LoginPage() {
               <Field data-invalid={!!errors.email}>
                 <FieldLabel htmlFor="email">이메일</FieldLabel>
                 <Input
+                  readOnly={true}
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="you@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   aria-invalid={!!errors.email}
