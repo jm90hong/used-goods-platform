@@ -116,54 +116,47 @@ export default function SignupPage() {
     }
 
 
-    
-    console.log(form)
-
-    var response = await axios.post(
-      "http://localhost:5000/api/user/create", 
-      {
-        id:form.email,
-        pw:form.password,
-        nick:form.nickname,
-        address1:form.address,
-        address2:form.addressDetail
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
+    try{
+      var response = await axios.post(
+        "http://localhost:5000/api/user/create", 
+        {
+          id:form.email,
+          pw:form.password,
+          nick:form.nickname,
+          address1:form.address,
+          address2:form.addressDetail
         },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+  
+      if(response.data.success){
+        //회원가입 완료
+        toast.success("회원가입이 완료되었습니다.")
+        router.push("/")
+        return
       }
-    )
+    }catch(error){
+      
+      //axios 에러 처리
+      if(axios.isAxiosError(error)){
+        const status = error.response?.status
+        const message = error.response?.data?.message
+        
+        if(status === 400){
+          toast.warning(message)
+        }else if(status === 500){
+          toast.error("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.")
+        }
+      }
 
-   
-
-    if(response.data.success){
-      //회원가입 완료
-      toast.success("회원가입이 완료되었습니다.")
-      router.push("/")
-      return
-    }
-
-
-    alert(response.status)
-
-
-    if(response.status === 400){
-      toast.error(response.data.message)
-      return
-    }
-    
-
-
-
-
-
-
-
-    
+    }    
   }
 
- 
+
 
   const handleGoogle = async () => {
     // 팝업창으로 구글 로그인 진행
