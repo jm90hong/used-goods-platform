@@ -38,8 +38,8 @@ type Errors = {
 export default function SellPage() {
   const router = useRouter()
   const { currentUser, addProduct } = useStore()
-  const fileRef = useRef<HTMLInputElement>(null)
 
+  const fileRef = useRef<HTMLInputElement>(null)
   const [mode, setMode] = useState<"upload" | "url">("upload")
   const [preview, setPreview] = useState("")
   const [imageUrl, setImageUrl] = useState("")
