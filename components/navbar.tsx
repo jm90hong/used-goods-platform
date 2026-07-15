@@ -10,6 +10,7 @@ import { formatPoints, useStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { useAuthStore } from "@/stores/useAuthStore"
 
 const navLinks = [
   { href: "/", label: "상품 리스트" },
@@ -20,11 +21,12 @@ const navLinks = [
 export function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { currentUser, logout } = useStore()
   const [open, setOpen] = useState(false)
 
+  const { currentUser } = useAuthStore();
+
+
   function handleLogout() {
-    logout()
     setOpen(false)
     router.push("/login")
   }
@@ -66,7 +68,8 @@ export function Navbar() {
             <>
               <Badge variant="secondary" className="gap-1 py-1.5">
                 <Coins className="size-3.5" />
-                {formatPoints(currentUser.points)}
+                {/* 포인트 포맷팅 */}
+                {formatPoints(currentUser.point)}
               </Badge>
               <Link
                 href="/mypage"
@@ -74,11 +77,13 @@ export function Navbar() {
               >
                 <Avatar className="size-8">
                   <AvatarFallback className="bg-primary/10 text-primary">
-                    {currentUser.nickname.slice(0, 1)}
+                    {/* 닉네임 첫 글자 추출 */}
+                    {currentUser.nick.slice(0, 1)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium">
-                  {currentUser.nickname}
+                  {/* 닉네임 표시 */}
+                  {currentUser.nick} ({currentUser.id})
                 </span>
               </Link>
               <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -121,12 +126,12 @@ export function Navbar() {
                 <div className="flex items-center gap-2">
                   <User className="size-4 text-primary" />
                   <span className="text-sm font-medium">
-                    {currentUser.nickname}
+                    {currentUser.nick}
                   </span>
                 </div>
                 <Badge variant="secondary" className="gap-1">
                   <Coins className="size-3.5" />
-                  {formatPoints(currentUser.points)}
+                  {formatPoints(currentUser.point)}
                 </Badge>
               </div>
             )}

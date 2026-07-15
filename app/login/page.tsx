@@ -28,6 +28,8 @@ import { auth, googleProvider } from "@/lib/firebase"
 import { signInWithPopup } from "firebase/auth"
 import UserApi from "@/api/UserApi"
 import { AxiosError } from "axios"
+import { useAuthStore } from "@/stores/useAuthStore"
+import User from "@/types/User"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -37,6 +39,13 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {},
   )
+
+
+  const { setCurrentUser } = useAuthStore();
+
+
+
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -59,6 +68,10 @@ export default function LoginPage() {
       });
 
       if(data.success){
+
+        const user = User.fromJson(data.data);
+        setCurrentUser(user);
+
         toast.success(`${email} 님 안녕하세요!`)
         router.push("/")
         return
