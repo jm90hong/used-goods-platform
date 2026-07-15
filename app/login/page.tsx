@@ -33,7 +33,6 @@ import User from "@/types/User"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, loginWithGoogle } = useStore()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(

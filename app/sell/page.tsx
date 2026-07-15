@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
 import { ImagePlus, Link2, Lock, Upload, X } from "lucide-react"
 import { toast } from "sonner"
+import { useEffect } from "react"
 
 import { useStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
@@ -46,6 +47,9 @@ export default function SellPage() {
   const [price, setPrice] = useState("")
   const [description, setDescription] = useState("")
   const [errors, setErrors] = useState<Errors>({})
+
+
+  
 
   if (!currentUser) {
     return (

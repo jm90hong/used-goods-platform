@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuthStore } from "@/stores/useAuthStore"
+import { toast } from "sonner"
 
 const navLinks = [
   { href: "/", label: "상품 리스트" },
@@ -23,12 +24,22 @@ export function Navbar() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
-  const { currentUser } = useAuthStore();
+  const { currentUser, logout } = useAuthStore();
 
 
   function handleLogout() {
+    var result = confirm('정말 로그아웃 하시겠습니까?')
+
+    if(!result){
+      return;
+    }
+
+
+    logout();
+    toast.success('로그아웃 되었습니다.')
     setOpen(false)
     router.push("/login")
+    
   }
 
   return (
