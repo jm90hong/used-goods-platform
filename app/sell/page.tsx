@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
-import { ImagePlus, Link2, Lock, Upload, X } from "lucide-react"
+import { ImagePlus, Link2, Loader2, Lock, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import { useEffect } from "react"
 
@@ -29,6 +29,8 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import MyUtils from "@/lib/my_utils"
 import { AxiosError } from "axios"
+import ItemApi from "@/api/ItemApi"
+import { useAuthStore } from "@/stores/useAuthStore"
 
 type Errors = {
   image?: string
@@ -39,7 +41,7 @@ type Errors = {
 
 export default function SellPage() {
   const router = useRouter()
-  const { currentUser, addProduct } = useStore()
+  const { currentUser } = useAuthStore()
 
   const fileRef = useRef<HTMLInputElement>(null)
   const [mode, setMode] = useState<"upload" | "url">("upload")
@@ -52,6 +54,11 @@ export default function SellPage() {
 
 
   const [currentImageFile, setCurrentImageFile] = useState<File | null>(null)
+
+
+  const [loading, setLoading] = useState(false)
+
+  
 
 
   
@@ -89,33 +96,37 @@ export default function SellPage() {
     if (Object.keys(next).length > 0) return
 
 
-    try{
+    try {
+      setLoading(true)
       //이미지 업로드 -> url 확보
-      var imageUrl = await MyUtils.uploadImageToStorage({file: currentImageFile!, path: 'items'})
+      var imageUrl = await MyUtils.uploadImageToStorage({
+        file: currentImageFile!,
+        path: "items",
+      })
 
       //상품 등록 요청
+      var data = await ItemApi.createItem({
+        userIdx: currentUser?.idx!,
+        itemImgUrl: imageUrl!,
+        name: name.trim(),
+        price: priceNum,
+        description: description.trim(),
+      })
 
-
-      
-    }catch(error){
-      if(error instanceof AxiosError){
-
+      if (data.success) {
+        toast.success("상품이 등록되었습니다.")
+        router.push(`/`)
       }
-        
-    }
-    
-
-
-
-    const created = addProduct({
-      image: currentImage,
-      name: name.trim(),
-      price: priceNum,
-      description: description.trim(),
-    })
-    if (created) {
-      toast.success("상품이 등록되었습니다.")
-      router.push(`/products/${created.id}`)
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          toast.warning(error.response?.data.message)
+        } else {
+          toast.error(error.response?.data.message)
+        }
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -132,7 +143,7 @@ export default function SellPage() {
         <CardHeader>
           <CardTitle className="text-base">판매자 정보</CardTitle>
           <CardDescription>
-            {currentUser?.nickname || "판매자"} 님으로 등록됩니다.
+            {currentUser?.nick || "판매자"} 님으로 등록됩니다.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -264,7 +275,15 @@ export default function SellPage() {
                 <FieldError>{errors.description}</FieldError>
               </Field>
 
-              <Button type="submit" size="lg" className="w-full">
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading && (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                )}
                 상품 등록하기
               </Button>
             </FieldGroup>

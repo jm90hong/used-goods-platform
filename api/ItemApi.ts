@@ -9,10 +9,23 @@ interface CreateItemProps {
     price: number;
 }
 
+interface GetItemsProps {
+    page: number;
+    limit: number;
+}
+
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/item`;
 
 
 const ItemApi = {
+
+
+    //상품 조회 요청
+    getItems : async ({page=1, limit=10}: GetItemsProps)=>{
+        var response = await axios.get(`${baseUrl}/list?page=${page}&limit=${limit}`)
+
+        return response.data;
+    },
 
     //상품 등록 요청
     createItem: async (props: CreateItemProps)=>{
