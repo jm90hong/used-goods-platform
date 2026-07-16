@@ -6,6 +6,7 @@ import ItemApi from "@/api/ItemApi"
 
 type ItemStore = {
   itemsInHomePage: Item[]
+  getItemsInHomePage: (props: {page: number, limit: number}) => Promise<void>
 }
 
 

@@ -8,11 +8,19 @@ import { useStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ProductCard } from "@/components/product-card"
+import { useItemStore } from "@/stores/useItemStore"
+import { useEffect } from "react"
 
 export default function HomePage() {
   const { products } = useStore()
   const [query, setQuery] = useState("")
 
+
+  const { itemsInHomePage, getItemsInHomePage } = useItemStore();
+
+  useEffect(()=>{
+    getItemsInHomePage({page:1, limit:10})
+  },[])
   
 
   const filtered = useMemo(() => {
@@ -70,8 +78,12 @@ export default function HomePage() {
 
       {filtered.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {filtered.map((product) => (
+          {/* {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
+          ))} */}
+
+          {itemsInHomePage.map((item)=>(
+            <ProductCard key={item.idx} item={item} />
           ))}
         </div>
       ) : (

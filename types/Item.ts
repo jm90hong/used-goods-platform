@@ -36,6 +36,8 @@ export default class Item {
         this.user = user || null
     }
 
+
+    //{...} -> Item
     static fromJson(json: any): Item {
         return new Item({
             idx: json.idx || 0,
@@ -51,7 +53,7 @@ export default class Item {
         })
     }
 
-
+    //[{...}, {...}, ...] -> [Item, Item, ...]
     static fromJsonList(jsonList: any[]): Item[] {
         return jsonList.map((json:any)=>Item.fromJson(json))
     }
