@@ -27,6 +27,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import MyUtils from "@/lib/my_utils"
+import { AxiosError } from "axios"
 
 type Errors = {
   image?: string
@@ -49,25 +51,15 @@ export default function SellPage() {
   const [errors, setErrors] = useState<Errors>({})
 
 
+  const [currentImageFile, setCurrentImageFile] = useState<File | null>(null)
+
+
   
 
-  if (!currentUser) {
-    return (
-      <main className="mx-auto flex w-full max-w-md flex-col items-center gap-4 px-4 py-20 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-accent">
-          <Lock className="size-6 text-primary" />
-        </div>
-        <h1 className="text-xl font-bold">로그인이 필요합니다</h1>
-        <p className="text-sm text-muted-foreground">
-          상품을 등록하려면 먼저 로그인해 주세요.
-        </p>
-        <Button nativeButton={false} render={<Link href="/login" />}>
-          로그인하러 가기
-        </Button>
-      </main>
-    )
-  }
+  
 
+  
+  //이미지 미리보기 ok
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -75,12 +67,13 @@ export default function SellPage() {
       toast.error("이미지 파일만 업로드할 수 있습니다.")
       return
     }
+    setCurrentImageFile(file)
     setPreview(URL.createObjectURL(file))
   }
 
   const currentImage = mode === "upload" ? preview : imageUrl
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const next: Errors = {}
     if (!currentImage) next.image = "상품 이미지를 등록해 주세요."
@@ -94,6 +87,25 @@ export default function SellPage() {
     }
     setErrors(next)
     if (Object.keys(next).length > 0) return
+
+
+    try{
+      //이미지 업로드 -> url 확보
+      var imageUrl = await MyUtils.uploadImageToStorage({file: currentImageFile!, path: 'items'})
+
+      //상품 등록 요청
+
+
+      
+    }catch(error){
+      if(error instanceof AxiosError){
+
+      }
+        
+    }
+    
+
+
 
     const created = addProduct({
       image: currentImage,
@@ -120,7 +132,7 @@ export default function SellPage() {
         <CardHeader>
           <CardTitle className="text-base">판매자 정보</CardTitle>
           <CardDescription>
-            {currentUser.nickname} 님으로 등록됩니다.
+            {currentUser?.nickname || "판매자"} 님으로 등록됩니다.
           </CardDescription>
         </CardHeader>
         <CardContent>

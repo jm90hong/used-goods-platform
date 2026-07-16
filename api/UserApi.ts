@@ -16,6 +16,8 @@ interface LoginProps {
 }
 
 
+const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/user`;
+
 const UserApi = {
 
     //로그인 요청
@@ -40,7 +42,7 @@ const UserApi = {
     //회원 가입 요청
     signup: async (props: SignupProps) : Promise<any> =>{
         var response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/user/create`, 
+            `${baseUrl}/create`, 
             {
                 id:props.email,
                 pw:props.password,
