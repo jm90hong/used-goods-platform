@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { notFound, useParams, useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AlertTriangle, ArrowLeft, CheckCircle2, Coins } from "lucide-react"
 import { toast } from "sonner"
 
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useItemStore } from "@/stores/useItemStore"
 import {
   Dialog,
   DialogClose,
@@ -25,19 +26,44 @@ import {
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
-  const { products, currentUser, applyProduct } = useStore()
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)
+  const { getDetailItem, detailItem } = useItemStore()
 
-  const product = products.find((p) => p.id === Number(params.id))
-  if (!product) {
-    notFound()
+  const { products, currentUser, applyProduct } = useStore()
+
+  
+  //임시 데이터
+  const product = {
+    id: detailItem?.idx ?? 0,
+    sellerIdx: detailItem?.userIdx ?? 0,
+    price: detailItem?.price ?? 0,
+    name: detailItem?.name ?? "",
+    image: detailItem?.imgUrl ?? "",
+    description: detailItem?.description ?? "",
+    createdAt: detailItem?.createdAt.toString().split("T")[0] ?? "",
+    updatedAt: detailItem?.updatedAt.toString().split("T")[0] ?? "",
+    isActive: detailItem?.isActive ?? "",
+    user: detailItem?.user ?? null,
   }
 
   const isOwner = currentUser?.idx === product.sellerIdx
   const points = currentUser?.points ?? 0
   const insufficient = points < product.price
   const remaining = points - product.price
+
+
+
+
+
+  useEffect(()=>{
+    getDetailItem(Number(params.id))
+  },[params.id])
+
+
+
+
+
 
   function handleApplyClick() {
     if (!currentUser) {
@@ -50,7 +76,7 @@ export default function ProductDetailPage() {
   }
 
   function handleConfirm() {
-    const result = applyProduct(product.id)
+    const result = applyProduct(product?.id ?? 0)
     if (result.ok) {
       setDone(true)
       toast.success("신청이 완료되었습니다.")
@@ -75,8 +101,8 @@ export default function ProductDetailPage() {
       <div className="grid gap-8 md:grid-cols-2">
         <div className="relative aspect-square overflow-hidden rounded-2xl border bg-muted">
           <Image
-            src={product.image || "/placeholder.svg"}
-            alt={product.name}
+            src={detailItem?.imgUrl || "/placeholder.svg"}
+            alt={detailItem?.name || ""}
             fill
             sizes="(max-width: 768px) 100vw, 500px"
             className="object-cover"
@@ -85,21 +111,21 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-balance">{product.name}</h1>
+          <h1 className="text-2xl font-bold text-balance">{detailItem?.name || ""}</h1>
           <p className="mt-3 text-3xl font-bold text-primary">
-            {formatPoints(product.price)}
+            {formatPoints(detailItem?.price ?? 0)}
           </p>
 
           <div className="mt-6 flex items-center gap-3 rounded-xl border p-4">
             <Avatar className="size-10">
               <AvatarFallback className="bg-primary/10 text-primary">
-                {product.sellerNickname.slice(0, 1)}
+                {detailItem?.user?.nick.slice(0, 1)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">{product.sellerNickname}</p>
+              <p className="text-sm font-medium">{detailItem?.user?.nick || ""}</p>
               <p className="text-xs text-muted-foreground">
-                판매자 · {product.createdAt} 등록
+                판매자 · {detailItem?.createdAt.toString().split("T")[0] || ""} 등록
               </p>
             </div>
           </div>
@@ -108,7 +134,7 @@ export default function ProductDetailPage() {
 
           <h2 className="mb-2 text-sm font-semibold">상품 설명</h2>
           <p className="leading-relaxed whitespace-pre-line text-muted-foreground">
-            {product.description}
+            {detailItem?.description || ""}
           </p>
 
           <div className="mt-8">

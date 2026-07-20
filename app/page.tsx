@@ -14,8 +14,9 @@ export default function HomePage() {
   const [searchWord, setSearchWord] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [order, setOrder] = useState<"desc" | "asc">("desc")
-  const klimit = 12
 
+
+  const klimit = 12
   const { itemsInHomePage, getItemsInHomePage } = useItemStore()
 
   useEffect(() => {
