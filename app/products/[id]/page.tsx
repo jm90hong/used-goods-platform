@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog"
 import PaymentApi from "@/api/paymentApi"
 import { AxiosError } from "axios"
+import User from "@/types/User"
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>()
@@ -32,9 +33,9 @@ export default function ProductDetailPage() {
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)
   const { getDetailItem, detailItem } = useItemStore()
-  const {currentUser} = useAuthStore();
+  const {currentUser, setCurrentUser} = useAuthStore();
 
-  const { products, applyProduct } = useStore()
+
 
   
   //임시 데이터
@@ -90,6 +91,13 @@ export default function ProductDetailPage() {
 
       if(data.success){
 
+        var remainingPoint = data.data.remaining_point;
+
+        setCurrentUser({
+          ...currentUser as User,
+          point: remainingPoint
+        })
+
 
         setDone(true)
         toast.success("신청이 완료되었습니다.")
@@ -107,15 +115,6 @@ export default function ProductDetailPage() {
         toast.error("오류가 발생했습니다.")
       }
     }
-
-
-    // const result = applyProduct(product?.id ?? 0)
-    // if (result.ok) {
-    //   setDone(true)
-    //   toast.success("신청이 완료되었습니다.")
-    // } else {
-    //   toast.error(result.message)
-    // }
   }
 
   return (
