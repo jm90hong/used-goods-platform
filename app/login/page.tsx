@@ -65,7 +65,7 @@ export default function LoginPage() {
         id: email,
         password: password
       });
-
+      
       if(data.success){
 
         const user = User.fromJson(data.data);

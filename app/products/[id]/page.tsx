@@ -23,6 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import PaymentApi from "@/api/paymentApi"
+import { AxiosError } from "axios"
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>()
@@ -79,14 +81,39 @@ export default function ProductDetailPage() {
     setOpen(true)
   }
 
-  function handleConfirm() {
-    const result = applyProduct(product?.id ?? 0)
-    if (result.ok) {
-      setDone(true)
-      toast.success("신청이 완료되었습니다.")
-    } else {
-      toast.error(result.message)
+  async function handleConfirm() { 
+    try{
+      var data = await PaymentApi.createPayment({
+        userIdx: currentUser?.idx ?? 0,
+        itemIdx: detailItem?.idx ?? 0
+      })
+
+      if(data.success){
+        setDone(true)
+        toast.success("신청이 완료되었습니다.")
+        router.push("/")
+      }else{
+        toast.error(data.message)
+      }
+
+
+
+    }catch(error){
+      if(error instanceof AxiosError){
+        toast.error(error.response?.data.message)
+      }else{
+        toast.error("오류가 발생했습니다.")
+      }
     }
+
+
+    // const result = applyProduct(product?.id ?? 0)
+    // if (result.ok) {
+    //   setDone(true)
+    //   toast.success("신청이 완료되었습니다.")
+    // } else {
+    //   toast.error(result.message)
+    // }
   }
 
   return (
