@@ -89,6 +89,8 @@ export default function ProductDetailPage() {
       })
 
       if(data.success){
+
+
         setDone(true)
         toast.success("신청이 완료되었습니다.")
         router.push("/")
