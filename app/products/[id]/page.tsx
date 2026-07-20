@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useItemStore } from "@/stores/useItemStore"
+import { useAuthStore } from "@/stores/useAuthStore"
 import {
   Dialog,
   DialogClose,
@@ -29,8 +30,9 @@ export default function ProductDetailPage() {
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)
   const { getDetailItem, detailItem } = useItemStore()
+  const {currentUser} = useAuthStore();
 
-  const { products, currentUser, applyProduct } = useStore()
+  const { products, applyProduct } = useStore()
 
   
   //임시 데이터
@@ -47,8 +49,10 @@ export default function ProductDetailPage() {
     user: detailItem?.user ?? null,
   }
 
-  const isOwner = currentUser?.idx === product.sellerIdx
-  const points = currentUser?.points ?? 0
+
+  
+  const isOwner = currentUser?.idx === detailItem?.userIdx
+  const points = currentUser?.point ?? 0
   const insufficient = points < product.price
   const remaining = points - product.price
 
@@ -176,7 +180,7 @@ export default function ProductDetailPage() {
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-muted-foreground">남은 포인트</span>
                   <span className="font-semibold text-primary">
-                    {formatPoints(currentUser?.points ?? 0)}
+                    {formatPoints(currentUser?.point ?? 0)}
                   </span>
                 </div>
               </div>
@@ -230,7 +234,7 @@ export default function ProductDetailPage() {
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-muted-foreground">상품 가격</span>
                     <span className="font-medium">
-                      -{formatPoints(product.price)}
+                      {formatPoints(product.price)}
                     </span>
                   </div>
                   <Separator className="my-2" />
