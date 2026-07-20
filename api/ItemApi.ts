@@ -12,6 +12,8 @@ interface CreateItemProps {
 interface GetItemsProps {
     page: number;
     limit: number;
+    searchWord: string;
+    order: 'asc' | 'desc';
 }
 
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/item`;
@@ -21,8 +23,8 @@ const ItemApi = {
 
 
     //상품 조회 요청
-    getItems : async ({page=1, limit=10}: GetItemsProps)=>{
-        var response = await axios.get(`${baseUrl}/list?page=${page}&limit=${limit}`)
+    getItems : async ({page=1, limit=10, searchWord='', order='desc'}: GetItemsProps)=>{
+        var response = await axios.get(`${baseUrl}/list?page=${page}&limit=${limit}&search_word=${searchWord}&order=${order}`)
 
         return response.data;
     },
