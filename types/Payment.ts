@@ -21,12 +21,12 @@ export default class Payment {
 
     static fromJson(json:any):Payment {
         return new Payment({
-            idx: json.idx,
-            userIdx: json.user_idx,
-            itemIdx: json.item_idx,
-            createdAt: json.created_at,
-            user: User.fromJson(json.user),
-            item: Item.fromJson(json.item)
+            idx: json.idx || 0,
+            userIdx: json.user_idx || 0,
+            itemIdx: json.item_idx || 0,
+            createdAt: json.created_at || new Date(),
+            user: User.fromJson(json.user) || null,
+            item: Item.fromJson(json.item) || null
         })
     }
 
