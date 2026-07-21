@@ -43,9 +43,6 @@ export default function LoginPage() {
   const { setCurrentUser } = useAuthStore();
 
 
-
-
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     var nextErrors: { email?: string; password?: string } = {}
