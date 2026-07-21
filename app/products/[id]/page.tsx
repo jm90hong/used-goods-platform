@@ -26,6 +26,7 @@ import {
 import PaymentApi from "@/api/paymentApi"
 import { AxiosError } from "axios"
 import User from "@/types/User"
+import MyPayment from "@/lib/my_payment"
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>()
@@ -82,7 +83,37 @@ export default function ProductDetailPage() {
     setOpen(true)
   }
 
-  async function handleConfirm() { 
+
+
+ const handleConfirm = async () => {
+  try{
+
+    await MyPayment.requestTossPayment({
+
+      amount: 100,//detailItem?.price ?? 0,
+      method: '카드',
+      orderName: detailItem?.name ?? "",
+      customerName: currentUser?.nick ?? "",
+
+      itemIdx: detailItem?.idx ?? 0,
+      userIdx: currentUser?.idx ?? 0
+    })
+
+
+  }catch(error){
+    toast.error("오류가 발생했습니다.")
+  }
+}
+
+
+
+
+
+
+
+
+
+  async function handleConfirm1() { 
     try{
       var data = await PaymentApi.createPayment({
         userIdx: currentUser?.idx ?? 0,

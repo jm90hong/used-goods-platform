@@ -1,5 +1,7 @@
 'use client';
 
+import { useAuthStore } from '@/stores/useAuthStore';
+import User from '@/types/User';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 
@@ -10,14 +12,20 @@ function SuccessContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const { currentUser,setCurrentUser } = useAuthStore();
+
   // 토스에서 쿼리스트링으로 넘겨주는 결제 정보 추출
   const paymentKey = searchParams.get('paymentKey');
   const orderId = searchParams.get('orderId');
   const amount = searchParams.get('amount');
 
+  const itemIdx = searchParams.get('itemIdx');
+  const userIdx = searchParams.get('userIdx');
+  const method = searchParams.get('method');
+
   useEffect(() => {
     async function confirmPayment() {
-      if (!paymentKey || !orderId || !amount) {
+      if (!paymentKey || !orderId || !amount || !itemIdx || !userIdx || !method) {
         setErrorMessage('잘못된 접근입니다. 결제 정보가 존재하지 않습니다.');
         setIsLoading(false);
         return;
@@ -35,10 +43,25 @@ function SuccessContent() {
             paymentKey,
             orderId,
             amount: Number(amount),
+            item_idx: Number(itemIdx),
+            user_idx: Number(userIdx),
+            method: method,
+            provider: 'TOSS',
           }),
         });
 
         const result = await response.json();
+
+        console.log('====결제완료 응답===');
+        console.log(result);
+
+        if(result.success){
+          var remaining_point = result.data.remaining_point;
+          setCurrentUser({
+            ...currentUser as User,
+            point: remaining_point,
+          });
+        }
 
         if (!response.ok) {
           throw new Error(result.message || '결제 승인 처리 중 에러가 발생했습니다.');
